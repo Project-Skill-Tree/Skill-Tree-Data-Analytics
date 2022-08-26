@@ -1,0 +1,14 @@
+Here is a small reference of the methods to easily access and visualise the SkillTree data.
+
+Note: for all graphs there exists a parameter called tight_layout, which, if set to False deactivates layout optimisation. This can be used if the plots are not displaying properly.
+
+## Marks methods that currently present issues
+
+count_users: Takes a dictionary as a parameter to specify which users to count. If left empty, it will return the total number of SkillTree users.
+order_skills_by_popularity: Returns an ordered dictionary with each skill as a key and its number of completions as a value. It takes the optional user_parameter parameter to generate a list for specific types of users.
+graph_skills_by_popularity: Returns a horizontal bar chart of the most popular skills. It takes an optional user_parameter parameter to specify which types of users to analyse and an amount parameter, to specify the amount of skills to graph (note, if graph_all is set to True, all skills will be displayed).
+order_challenges_by_popularity: Returns an ordered dictionary with each challenge as a key and its number of completions as a value. It takes the optional user_parameter parameter to generate a list for specific types of users.
+get_skill_completion_rate: Returns an ordered dictionary whose key is the id of each skill, and whose value is a dictionary containing the amount of users that have started, that are in progress and that have completed each skill, along with a score (indicating, from 0 to 1, the completion rate of the skill). Accepts parameters for skill and users.
+list_skills_by_ease: Returns a dictionary with each skill and its completion rate
+## graph_skills_by_ease: Graphs skills by ease. Can take parameter.
+graph_xp_distribution: Returns a graph with a distribution of users' xp, using a logarithmic scale.
