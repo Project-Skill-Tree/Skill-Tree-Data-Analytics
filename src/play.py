@@ -1,4 +1,2 @@
 import stdata
-
-r = stdata.Reader()
-
+import stgraphs
