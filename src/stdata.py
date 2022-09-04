@@ -1,10 +1,9 @@
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
-import matplotlib.pyplot as plt
 import os
 
 
-class Reader (object):
+class DataObject:
     def __init__(self) -> None:
         db_user = os.getenv("STDB_USER")
         db_password = os.getenv("STDB_PASS")
@@ -16,18 +15,36 @@ class Reader (object):
         self.skills = self.db.Skills
         self.tasks = self.db.Tasks
 
-    @staticmethod
-    def set_plot(title: str, tight_layout: bool) -> None:
-        plt.style.use("seaborn-darkgrid")
-        plt.title(title)
-        if tight_layout:
-            plt.tight_layout
-        plt.show()
-    
+    def close(self) -> None:
+        self.client.close()
+
+
+class UserData (DataObject):
     def count_users(self, parameter={}) -> int:
         return len(list(self.users.find(parameter)))
-    
 
+    def timezone_counter(self, parameter={}) -> dict:
+        from collections import Counter, OrderedDict
+        time_zone_list = []
+        users = self.users.find(parameter)
+        for user in users:
+            time_zone_list.append(str(user["timezone"]))
+        timezone_dict = OrderedDict(Counter(time_zone_list).most_common())
+        return timezone_dict
+    
+    def number_skills_completed_dict(self, parameter={}) -> dict:
+        from collections import Counter
+        data =  [len(user["skillscompleted"]) for user in self.users.find(parameter)]
+        final_dict = Counter(data)
+        return final_dict
+    
+    def number_skills_completed_data(self, parameter={}) -> str:
+        import pandas as pd
+        data =  [len(user["skillscompleted"]) for user in self.users.find(parameter)]
+        total = pd.Series(data).describe()
+        return total
+
+class SkillData(DataObject):
     def order_skills_by_popularity(self, user_parameter={}) -> list:
         from collections import Counter, OrderedDict
         total_list = []
@@ -39,62 +56,10 @@ class Reader (object):
         total_dictionary = OrderedDict(Counter(total_list).most_common())
         skills = total_dictionary.keys()
         
-        skill_descriptions = [self.skills.find_one({"_id":skill})["title"] for skill in skills]
+        skill_descriptions = [self.skills.find_one({"_id":skill})["goals"] for skill in skills]
         title_count = dict(zip(skill_descriptions, total_dictionary.values()))
         
         return title_count
-    
-
-    def graph_skills_by_popularity(self, user_parameter={}, amount=10, graph_all=False, tight_layout=True) -> None:
-        uncut_data = self.order_skills_by_popularity(user_parameter)
-
-        if graph_all == True:
-            amount = len(uncut_data) + 1
-
-        data = {k: uncut_data[k] for k in list(uncut_data)[:amount]}
-        skills = list(data.keys())
-        performance = list(data.values())
-        plt.barh(skills, performance)
-        plt.xlabel('Number of completions')
-
-        for i, v in enumerate(performance):
-            plt.text(v + 1, i, str(v), color='blue', fontweight='bold')
-        
-        self.set_plot("Skill Popularity", tight_layout)
-
-    def order_challenges_by_popularity(self, user_parameter={}) -> list:
-        from collections import Counter, OrderedDict
-        total_list = []
-        users = self.users.find(user_parameter)
-        for user in users:
-            for challenge in user["challengescompleted"]:
-                total_list.append(challenge)
-
-        total_dictionary = OrderedDict(Counter(total_list).most_common())
-        challenges = total_dictionary.keys()
-        
-        challenge_descriptions = [self.challenges.find_one({"_id":challenge})["goals"][0] for challenge in challenges]
-        title_count = dict(zip(challenge_descriptions, total_dictionary.values()))
-        
-        return title_count
-    
-    def graph_challenges_by_popularity(self, user_parameter={}, amount=10, graph_all=False, tight_layout=True) -> None:
-        uncut_data = self.order_challenges_by_popularity(user_parameter)
-
-        if graph_all == True:
-            amount = len(uncut_data) + 1
-
-        data = {k: uncut_data[k] for k in list(uncut_data)[:amount]}
-        challenges = list(data.keys())
-        performance = list(data.values())
-        plt.barh(challenges, performance)
-        plt.xlabel('Number of completions')
-
-        for i, v in enumerate(performance):
-            plt.text(v + 1, i, str(v), color='blue', fontweight='bold')
-        
-        self.set_plot("Challenge Popularity", tight_layout)
-        
     
     def get_skill_completion_rate(self, user_parameter={}, skill_parameter={}) -> dict:
         from collections import Counter
@@ -105,7 +70,7 @@ class Reader (object):
 
         for user in users:
             for completed in user["skillscompleted"]:
-                if completed in skills:
+               if completed in skills:
                     completed_list.append(completed)
             for progress in user["skillsinprogress"]:
                 if completed in skills:
@@ -125,17 +90,21 @@ class Reader (object):
         total_dict = dict(zip(keys, values))
         return total_dict
     
-    def graph_skills_by_ease(self, skill_parameter={}, tight_layout=False) -> None:
-        data = self.list_skills_by_ease(skill_parameter=skill_parameter)
-        plt.bar(data.keys(), data.values())
-        plt.xlabel("Completion_rate")
-        self.set_plot("Skills by ease", tight_layout=tight_layout)
-    
-    def graph_xp_distribution(self, user_parameter={}, tight_layout=True) -> None:
-        xp_list = [user["xp"] for user in self.users.find(user_parameter)]
-        plt.hist(xp_list)
-        plt.yscale("log")
-        self.set_plot("XP Distribution", tight_layout)
 
-    def close(self) -> None:
-        self.client.close()
+class ChallengeData(DataObject):
+    def order_challenges_by_popularity(self, user_parameter={}) -> list:
+        from collections import Counter, OrderedDict
+        total_list = []
+        users = self.users.find(user_parameter)
+        for user in users:
+            for challenge in user["challengescompleted"]:
+                total_list.append(challenge)
+
+        total_dictionary = OrderedDict(Counter(total_list).most_common())
+        challenges = total_dictionary.keys()
+        
+        challenge_descriptions = [self.challenges.find_one({"_id":challenge})["goals"][0] for challenge in challenges]
+        title_count = dict(zip(challenge_descriptions, total_dictionary.values()))
+        
+        return title_count
+        
