@@ -2,3 +2,4 @@ matplotlib
 pymongo
 pymongo[srv]
 pandas
+seaborn

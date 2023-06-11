@@ -31,3 +31,4 @@ that are available in each of the methods.
 
 # Completion rate of the skills belonging to the fitness category, where users are in timezone 0
 data = stdata.SkillData().get_skill_completion_rate(skill_parameter={"category":"fitness"}, user_parameter={"timezone":0})
+print(data)
