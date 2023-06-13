@@ -43,3 +43,22 @@ def coeff_variation(users: pd.DataFrame, field: str) -> pd.DataFrame:
     Calculates the coefficient of variation of users for a given field.
     '''
     return users[field].std()/users[field].mean()
+
+def add_completions_per_category(users: pd.DataFrame, skills: pd.DataFrame) -> pd.DataFrame:
+    '''
+    Adds a new column per category of skills detailing the amount of completions each user has
+    for that given category.
+    '''
+    import ast
+    import re
+    users_extended = users
+    for category in skills["category"].unique():
+        users_extended[category+"C"]=0
+    
+    for i, user in users_extended.iterrows():
+        clean_str = re.sub(r"ObjectId\('(.+?)'\)", r"'\1'", user["skillscompleted"])
+        for completed in ast.literal_eval(clean_str):
+            skill = skills[skills["_id"] == completed]
+            category = skill["category"]
+            user[category+"C"] = user[category+"C"] + 1
+    return users_extended
