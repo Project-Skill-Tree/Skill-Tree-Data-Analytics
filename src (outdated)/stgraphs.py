@@ -27,9 +27,16 @@ class UserGraph(GraphObject):
     def bar_timezones(self, user_parameter={}, tight_layout=True) -> None:
         data = UserData().timezone_counter(parameter=user_parameter)
         x = data.keys()
-        y= data.values()
+        y = data.values()
         plt.bar(x, y)
         self.set_plot("Users per timezone", tight_layout)
+    
+    def graph_number_skills_completed(self, user_parameter={}, tight_layout=True) -> None:
+        data = UserData().number_skills_completed_dict(parameter=user_parameter)
+        x = data.keys()
+        y = data.values()
+        plt.bar(x, y)
+        self.set_plot("Number of skills completed", tight_layout)
 
 class SkillGraph(GraphObject):
     def graph_skills_by_popularity(self, user_parameter={}, amount=10, graph_all=False, tight_layout=True) -> None:
@@ -49,9 +56,9 @@ class SkillGraph(GraphObject):
         
         self.set_plot("Skill Popularity", tight_layout)
     
-    def graph_skills_by_ease(self, skill_parameter={}, tight_layout=False) -> None:
+    def graph_skills_by_ease(self, skill_parameter={}, tight_layout=False, amount=10) -> None:
         data = SkillData().list_skills_by_ease(skill_parameter=skill_parameter)
-        plt.bar(data.keys(), data.values())
+        plt.barh( list(data.keys())[:amount], list(data.values())[:amount])
         plt.xlabel("Completion_rate")
         self.set_plot("Skills by ease", tight_layout=tight_layout)
 
@@ -72,4 +79,3 @@ class ChallengeGraph(GraphObject):
             plt.text(v + 1, i, str(v), color='blue', fontweight='bold')
         
         self.set_plot("Challenge Popularity", tight_layout)
-
