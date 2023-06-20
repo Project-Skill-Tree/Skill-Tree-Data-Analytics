@@ -35,3 +35,9 @@ def add_in_progress(skills, users):
         skills["completed"][i] = count
 
     return skills
+
+def id_to_title(skills: pd.DataFrame, id: str) -> str:
+    '''
+    Takes the id of a skill and returns its title.
+    '''
+    return str(skills[skills["_id"] == id]["title"][0])
